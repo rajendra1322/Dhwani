@@ -78,12 +78,12 @@ export default function LocationPicker({
       return;
     markerRef.current.setLatLng([value.lat, value.lng]);
     mapInstance.current?.setView([value.lat, value.lng], mapInstance.current.getZoom());
-  }, [value?.lat, value?.lng]);
+  }, [value]);
 
   return (
     <div
       ref={mapRef}
-      className="w-full rounded-2xl border border-[#1e2a5e]/15 overflow-hidden z-0"
+      className="w-full overflow-hidden rounded-2xl border border-black/10 z-0"
       style={{ height }}
     />
   );

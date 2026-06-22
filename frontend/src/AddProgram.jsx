@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import API from "./api";
 import LocationPickerWithSearch from "./components/LocationPickerWithSearch.jsx";
+import { BentoCard, BentoGrid, BentoMetric, BentoShell } from "./components/artist/Bento";
 import { Button } from "./components/ui/Button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/Card";
 import { toast } from "sonner";
 
 export default function AddProgram() {
@@ -53,24 +53,30 @@ export default function AddProgram() {
   };
 
   return (
-    <div className="max-w-3xl">
-      <Card>
-        <CardHeader>
-          <CardTitle>Create New Program</CardTitle>
-          <CardDescription>
-            Add a new event or service you want to offer
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="space-y-6">
+      <BentoShell
+        eyebrow="Create program"
+        title="Shape your offers"
+        description="Package your service with the details clients need to trust the booking."
+      >
+        {/* <BentoGrid className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-3">
+          <BentoMetric label="Title" value="Clear" hint="Show what you offer" accent="bg-[#c45c26]" />
+          <BentoMetric label="Pricing" value="Upfront" hint="Make value obvious" accent="bg-[#1e2a5e]" />
+          <BentoMetric label="Venue" value="Mapped" hint="Location-aware booking" accent="bg-emerald-500" />
+        </BentoGrid> */}
+      </BentoShell>
+
+      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <BentoCard>
           {err && (
-            <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-200 text-sm">
+            <div className="mb-6 rounded-2xl border border-red-500/15 bg-red-50 p-4 text-sm text-red-800">
               {err}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="mb-2 block text-sm font-medium text-[#1e2a5e]">
                 Program Title *
               </label>
               <input
@@ -79,13 +85,13 @@ export default function AddProgram() {
                 onChange={handleChange}
                 required
                 placeholder="e.g. Wedding DJ Performance"
-                className="w-full px-4 py-2.5 rounded-lg bg-[#0f0d18] border border-white/15 text-white placeholder-white/40 text-sm focus:outline-none focus:border-white/30 focus:bg-white/5"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-[#1c1b1a] placeholder:text-[#8b7d6d] focus:border-[#1e2a5e]/30 focus:outline-none focus:ring-2 focus:ring-[#1e2a5e]/10"
               />
             </div>
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="mb-2 block text-sm font-medium text-[#1e2a5e]">
                 Category
               </label>
               <input
@@ -93,14 +99,14 @@ export default function AddProgram() {
                 value={form.category}
                 onChange={handleChange}
                 placeholder="e.g. Music, Dance, Entertainment"
-                className="w-full px-4 py-2.5 rounded-lg bg-[#0f0d18] border border-white/15 text-white placeholder-white/40 text-sm focus:outline-none focus:border-white/30 focus:bg-white/5"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-[#1c1b1a] placeholder:text-[#8b7d6d] focus:border-[#1e2a5e]/30 focus:outline-none focus:ring-2 focus:ring-[#1e2a5e]/10"
               />
             </div>
 
             {/* Price and Duration Grid */}
             <div className="grid sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="mb-2 block text-sm font-medium text-[#1e2a5e]">
                   Price (₹) *
                 </label>
                 <input
@@ -111,11 +117,11 @@ export default function AddProgram() {
                   value={form.priceRupee}
                   onChange={handleChange}
                   placeholder="5000"
-                  className="w-full px-4 py-2.5 rounded-lg bg-[#0f0d18] border border-white/15 text-white placeholder-white/40 text-sm focus:outline-none focus:border-white/30 focus:bg-white/5"
+                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-[#1c1b1a] placeholder:text-[#8b7d6d] focus:border-[#1e2a5e]/30 focus:outline-none focus:ring-2 focus:ring-[#1e2a5e]/10"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="mb-2 block text-sm font-medium text-[#1e2a5e]">
                   Duration (minutes) *
                 </label>
                 <input
@@ -125,14 +131,14 @@ export default function AddProgram() {
                   value={form.durationMinutes}
                   onChange={handleChange}
                   placeholder="120"
-                  className="w-full px-4 py-2.5 rounded-lg bg-[#0f0d18] border border-white/15 text-white placeholder-white/40 text-sm focus:outline-none focus:border-white/30 focus:bg-white/5"
+                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-[#1c1b1a] placeholder:text-[#8b7d6d] focus:border-[#1e2a5e]/30 focus:outline-none focus:ring-2 focus:ring-[#1e2a5e]/10"
                 />
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="mb-2 block text-sm font-medium text-[#1e2a5e]">
                 Description
               </label>
               <textarea
@@ -141,42 +147,42 @@ export default function AddProgram() {
                 value={form.description}
                 onChange={handleChange}
                 placeholder="Describe your program in detail..."
-                className="w-full px-4 py-2.5 rounded-lg bg-[#0f0d18] border border-white/15 text-white placeholder-white/40 text-sm focus:outline-none focus:border-white/30 focus:bg-white/5 resize-none"
+                className="w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-[#1c1b1a] placeholder:text-[#8b7d6d] focus:border-[#1e2a5e]/30 focus:outline-none focus:ring-2 focus:ring-[#1e2a5e]/10"
               />
             </div>
 
             {/* Venue Label */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="mb-2 block text-sm font-medium text-[#1e2a5e]">
                 Venue Name (Optional)
               </label>
               <input
                 value={venue.label}
                 onChange={(e) => setVenue((v) => ({ ...v, label: e.target.value }))}
                 placeholder="e.g. Taj Convention Hall, Bangalore"
-                className="w-full px-4 py-2.5 rounded-lg bg-[#0f0d18] border border-white/15 text-white placeholder-white/40 text-sm focus:outline-none focus:border-white/30 focus:bg-white/5"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-[#1c1b1a] placeholder:text-[#8b7d6d] focus:border-[#1e2a5e]/30 focus:outline-none focus:ring-2 focus:ring-[#1e2a5e]/10"
               />
             </div>
 
             {/* Location Picker */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="mb-2 block text-sm font-medium text-[#1e2a5e]">
                 Venue Location (Click on map or search)
               </label>
               <LocationPickerWithSearch
                 value={{ lat: venue.lat, lng: venue.lng }}
-                onChange={({ lat, lng }) => setVenue((v) => ({ ...v, lat, lng }))}
+                onChange={(next) => setVenue((v) => ({ ...v, ...next }))}
                 height={320}
                 persistUserProfile={false}
               />
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3 pt-6 border-t border-white/10">
+            <div className="flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row">
               <Button
                 type="submit"
                 disabled={loading}
-                className="flex-1 flex items-center justify-center"
+                className="flex-1 items-center justify-center"
               >
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {loading ? "Creating..." : "Create Program"}
@@ -191,8 +197,30 @@ export default function AddProgram() {
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </BentoCard>
+
+        {/* <div className="space-y-4">
+          <BentoCard className="bg-gradient-to-br from-white/[0.05] to-[#1e2a5e]/20">
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-[0.24em] text-[#6b5b49]">Tips</p>
+              <h2 className="text-2xl font-serif text-[#1e2a5e]">What makes a great listing</h2>
+              <p className="text-sm leading-6 text-[#5c4f3d]">
+                Use a clear title, add a concise category, and keep the venue label human-readable
+                so the card feels premium and trustworthy.
+              </p>
+            </div>
+          </BentoCard>
+
+          <BentoCard>
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-[0.24em] text-[#6b5b49]">Preview</p>
+              <div className="rounded-2xl border border-black/10 bg-white p-4">
+                <p className="text-sm text-[#5c4f3d]">Your program will appear as a clean card in the Programs page.</p>
+              </div>
+            </div>
+          </BentoCard>
+        </div> */}
+      </div>
     </div>
   );
 }

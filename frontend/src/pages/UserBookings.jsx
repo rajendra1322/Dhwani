@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../api";
+import { downloadInvoicePDF } from "../utils/invoiceGenerator";
 
 const STATUS_LABEL = {
   REQUESTED: "Requested",
@@ -20,6 +21,11 @@ function badgeClass(status) {
   return "badge badge-neutral";
 }
 
+function shortLocationLabel(label) {
+  if (!label) return ""
+  return String(label).split(",")[0].trim()
+}
+
 export default function UserBookings() {
   const [rows, setRows] = useState([]);
   const [msg, setMsg] = useState("");
@@ -35,70 +41,31 @@ export default function UserBookings() {
   async function downloadInvoice(bookingId) {
     try {
       const { data } = await API.get(`/api/user/bookings/${bookingId}/invoice-data`);
-      const jsPDF = window.jspdf?.jsPDF;
-      if (!jsPDF) {
-        alert("PDF library failed to load. Check your network and reload the page.");
-        return;
-      }
-      const doc = new jsPDF();
       const c = data.company;
       const b = data.booking;
       const g = data.guest;
-      let y = 18;
-      doc.setFontSize(16);
-      doc.text(c.name || "Dhwani", 105, y, { align: "center" });
-      y += 10;
-      doc.setFontSize(9);
-      if (c.address) {
-        doc.text(c.address, 105, y, { align: "center" });
-        y += 6;
-      }
-      if (c.gstin) {
-        doc.text(`GSTIN: ${c.gstin}`, 105, y, { align: "center" });
-        y += 10;
-      }
-      doc.setFontSize(12);
-      doc.text("Tax invoice / receipt", 14, y);
-      y += 10;
-      doc.setFontSize(10);
-      doc.text(`Reference: ${data.reference}`, 14, y);
-      y += 6;
-      doc.text(`Date: ${new Date().toLocaleString("en-IN")}`, 14, y);
-      y += 10;
-      doc.text(`Bill to: ${g?.name || ""}`, 14, y);
-      y += 6;
-      doc.text(`Email: ${g?.email || ""}`, 14, y);
-      y += 10;
-      doc.text(`Program: ${b.programTitle || ""}`, 14, y);
-      y += 6;
-      doc.text(`Artist: ${b.artistName || ""}`, 14, y);
-      y += 6;
-      doc.text(`Event date: ${b.eventDate}`, 14, y);
-      y += 12;
-      doc.setFontSize(11);
-      doc.text("Amounts", 14, y);
-      y += 8;
-      doc.setFontSize(10);
-      const fmt = (paise) =>
-        `INR ${((Number(paise) || 0) / 100).toLocaleString("en-IN", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`;
-      doc.text(`Program total: ${fmt(b.programPricePaise)}`, 14, y);
-      y += 6;
-      doc.text(`Total paid: ${fmt(b.totalPaidPaise)}`, 14, y);
-      y += 6;
-      doc.text(`Balance due: ${fmt(b.balanceDuePaise)}`, 14, y);
-      y += 12;
-      doc.setFontSize(8);
-      doc.setTextColor(80);
-      doc.text(
-        "Generated in your browser after Razorpay payment (test or live).",
-        14,
-        y,
-        { maxWidth: 180 }
+      await downloadInvoicePDF(
+        {
+          invoiceNumber: data.reference || bookingId,
+          invoiceDate: new Date().toISOString(),
+          dueDate: new Date().toISOString(),
+          artistName: b.artistName || "Artist",
+          artistEmail: c.email || "",
+          artistPhone: c.phone || "",
+          artistGSTIN: c.gstin || "",
+          userName: g?.name || "Guest",
+          userEmail: g?.email || "",
+          userPhone: g?.phone || "",
+          eventDate: b.eventDate,
+          eventLocation: b.eventLocationFull || b.eventLocation || "",
+          programTitle: b.programTitle || "",
+          programDescription: "",
+          amount: (b.totalPaidPaise || 0) / 100,
+          gstRate: 18,
+          notes: "Generated after payment via Razorpay.",
+        },
+        `dhwani-invoice-${bookingId}.pdf`
       );
-      doc.save(`dhwani-invoice-${bookingId}.pdf`);
     } catch (e) {
       alert(e.response?.data?.message || "Could not build invoice");
     }
@@ -227,6 +194,11 @@ export default function UserBookings() {
                 <p className="muted mt-1">
                   {b.artistId?.name} · {b.eventDate}
                 </p>
+                {b.eventLocation && (
+                  <p className="mt-2 rounded-full border border-[#1e2a5e]/10 bg-[#1e2a5e]/[0.03] px-3 py-1 text-xs text-[#1e2a5e] inline-flex">
+                    Location: {shortLocationLabel(b.eventLocation)}
+                  </p>
+                )}
                 {(b.totalPaidPaise > 0 || b.status === "PARTIALLY_PAID" || b.status === "PAID") && (
                   <p className="text-xs text-emerald-900 mt-3">
                     Paid ₹{((b.totalPaidPaise || 0) / 100).toFixed(2)} of ₹

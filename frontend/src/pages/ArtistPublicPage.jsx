@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import API from "../api";
+import LocationPickerWithSearch from "../components/LocationPickerWithSearch.jsx";
+
+function shortLocationLabel(label) {
+  if (!label) return ""
+  return label.split(",")[0].trim()
+}
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -29,6 +35,11 @@ export default function ArtistPublicPage() {
   const [selectedProgramId, setSelectedProgramId] = useState("");
   const [bookingMsg, setBookingMsg] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [eventLocation, setEventLocation] = useState({
+    lat: 12.9716,
+    lng: 77.5946,
+    label: "",
+  });
 
   useEffect(() => {
     API.get(`/public/artists/${artistId}`)
@@ -36,6 +47,13 @@ export default function ArtistPublicPage() {
         setData(r.data);
         const first = r.data.programs?.[0]?._id;
         if (first) setSelectedProgramId(first);
+        if (r.data.profile?.location?.lat != null && r.data.profile?.location?.lng != null) {
+          setEventLocation({
+            lat: r.data.profile.location.lat,
+            lng: r.data.profile.location.lng,
+            label: r.data.profile.location.label || "",
+          });
+        }
       })
       .catch((e) => setErr(e.response?.data?.message || "Failed to load artist"));
   }, [artistId]);
@@ -80,9 +98,13 @@ export default function ArtistPublicPage() {
       await API.post("/api/user/bookings", {
         programId: selectedProgramId,
         eventDate: dateStr,
+        eventLocation: shortLocationLabel(eventLocation.label || ""),
+        eventLocationFull: eventLocation.label || "",
+        eventLocationLat: eventLocation.lat,
+        eventLocationLng: eventLocation.lng,
       });
       setBookingMsg(
-        `Booking requested for ${dateStr}. Next: wait for artist acceptance, then pay from “My bookings”.`
+        `Booking requested for ${dateStr} in ${shortLocationLabel(eventLocation.label || "your chosen location")}. Next: wait for artist acceptance, then pay from “My bookings”.`
       );
     } catch (e) {
       if (e.response?.status === 401) {
@@ -250,6 +272,26 @@ export default function ArtistPublicPage() {
             </span>
           </div>
         </section>
+
+        <section className="surface p-6 sm:p-8">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <h2 className="title-section">Step 2.5 - Event location</h2>
+            <span className="badge badge-neutral">Shown to artist</span>
+          </div>
+          <p className="muted mb-4">
+            Add the venue or event area so the artist can review the request with the right context.
+          </p>
+          {eventLocation.label && (
+            <div className="mb-4 rounded-xl border border-[#1e2a5e]/10 bg-[#1e2a5e]/[0.03] px-4 py-3 text-sm text-[#1e2a5e]">
+              Selected: <span className="font-semibold">{shortLocationLabel(eventLocation.label)}</span>
+            </div>
+          )}
+          <LocationPickerWithSearch
+            value={eventLocation}
+            onChange={(next) => setEventLocation((prev) => ({ ...prev, ...next }))}
+            height={260}
+          />
+        </section>
       </div>
 
       <aside className="lg:sticky lg:top-6 h-fit space-y-4">
@@ -278,6 +320,16 @@ export default function ArtistPublicPage() {
               <p className="font-semibold text-[#1e2a5e]">
                 {selectedDate || "Select an open date"}
               </p>
+            </div>
+
+            <div className="card p-4 bg-white">
+              <p className="text-xs text-black/50">Location</p>
+              <p className="font-semibold text-[#1e2a5e]">
+                {shortLocationLabel(eventLocation.label) || "Search and select a location"}
+              </p>
+              {eventLocation.label && (
+                <p className="mt-1 line-clamp-2 text-xs text-[#5c4f3d]">{eventLocation.label}</p>
+              )}
             </div>
 
             <button

@@ -46,7 +46,7 @@ function Userhomehero  ()  {
             <span className="text-gray-400 mr-2">📍</span>
             <input 
               type="text" 
-              placeholder="Thrissur" 
+              placeholder="Bengaluru" 
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="outline-none text-gray-700 w-full"

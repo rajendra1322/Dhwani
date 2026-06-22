@@ -1,6 +1,30 @@
 import jsPDF from "jspdf"
-import html2canvas from "html2canvas"
-import { formatDate } from "date-fns"
+import { format } from "date-fns"
+
+function currency(amount) {
+  return `₹${Number(amount || 0).toFixed(2)}`
+}
+
+function drawSectionBox(pdf, x, y, w, h, title) {
+  pdf.setDrawColor(220, 224, 230)
+  pdf.setFillColor(250, 251, 253)
+  pdf.roundedRect(x, y, w, h, 3, 3, "FD")
+  if (title) {
+    pdf.setFont("Helvetica", "bold")
+    pdf.setFontSize(8)
+    pdf.setTextColor(107, 91, 73)
+    pdf.text(title.toUpperCase(), x + 4, y + 5)
+  }
+}
+
+function writeLines(pdf, lines, x, y, lineHeight = 5, color = [28, 27, 26]) {
+  pdf.setTextColor(...color)
+  lines.forEach((line) => {
+    pdf.text(String(line), x, y)
+    y += lineHeight
+  })
+  return y
+}
 
 export async function generateProfessionalInvoice(bookingData) {
   const {
@@ -23,219 +47,178 @@ export async function generateProfessionalInvoice(bookingData) {
     notes = "",
   } = bookingData
 
-  // Create PDF with A4 size
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "A4" })
   const pageWidth = pdf.internal.pageSize.getWidth()
   const pageHeight = pdf.internal.pageSize.getHeight()
-  const margin = 15
-  const contentWidth = pageWidth - 2 * margin
+  const margin = 14
+  const contentWidth = pageWidth - margin * 2
+  const primary = [196, 92, 38]
+  const navy = [30, 42, 94]
+  const text = [28, 27, 26]
+  const muted = [107, 91, 73]
 
-  // Colors
-  const primaryColor = [196, 92, 38] // #c45c26
-  const darkColor = [15, 13, 24] // #0f0d18
-  const lightColor = [255, 255, 255]
+  let y = margin
 
-  let yPosition = margin
-
-  // Header with company branding
-  pdf.setFillColor(...primaryColor)
-  pdf.rect(0, 0, pageWidth, 25, "F")
-
-  // Invoice title
+  pdf.setFillColor(...primary)
+  pdf.roundedRect(margin, y, contentWidth, 22, 4, 4, "F")
+  pdf.setTextColor(255, 255, 255)
   pdf.setFont("Helvetica", "bold")
   pdf.setFontSize(20)
-  pdf.setTextColor(...lightColor)
-  pdf.text("INVOICE", margin, 12)
-
+  pdf.text("INVOICE", margin + 4, y + 9)
+  pdf.setFontSize(9)
+  pdf.setFont("Helvetica", "normal")
+  pdf.text("Dhwani Event Management", margin + 4, y + 15)
   pdf.setFontSize(10)
-  pdf.setFont("Helvetica", "normal")
-  pdf.text("Dhwani Event Management", margin, 18)
-
-  // Invoice number and date on right
-  pdf.setFontSize(9)
-  pdf.setTextColor(80, 80, 80)
-  const invoiceInfoX = pageWidth - margin - 60
-  pdf.text(`Invoice #: ${invoiceNumber}`, invoiceInfoX, 12)
-  pdf.text(`Date: ${formatDate(new Date(invoiceDate), "dd/MM/yyyy")}`, invoiceInfoX, 17)
-  pdf.text(`Due: ${formatDate(new Date(dueDate), "dd/MM/yyyy")}`, invoiceInfoX, 22)
-
-  yPosition = 35
-
-  // Artist (From) and Customer (To) sections
-  pdf.setFontSize(9)
   pdf.setFont("Helvetica", "bold")
-  pdf.setTextColor(80, 80, 80)
-  pdf.text("FROM:", margin, yPosition)
-  pdf.text("BILL TO:", pageWidth / 2, yPosition)
+  pdf.text(`#${invoiceNumber || "INV"}`, pageWidth - margin - 40, y + 9)
+  pdf.setFont("Helvetica", "normal")
+  pdf.text(format(new Date(invoiceDate), "dd MMM yyyy"), pageWidth - margin - 40, y + 15)
 
-  yPosition += 5
+  y += 28
+
+  const leftBoxH = 34
+  const rightBoxH = 34
+  drawSectionBox(pdf, margin, y, contentWidth / 2 - 2, leftBoxH, "From")
+  drawSectionBox(pdf, pageWidth / 2 + 2, y, contentWidth / 2 - 2, rightBoxH, "Bill To")
+
+  pdf.setFontSize(9)
+  pdf.setFont("Helvetica", "normal")
+  writeLines(
+    pdf,
+    [
+      artistName || "Artist",
+      artistEmail || "",
+      artistPhone ? `Phone: ${artistPhone}` : "",
+      artistGSTIN ? `GSTIN: ${artistGSTIN}` : "GSTIN: N/A",
+    ].filter(Boolean),
+    margin + 4,
+    y + 10,
+    4.8,
+    text
+  )
+
+  writeLines(
+    pdf,
+    [userName || "Guest", userEmail || "", userPhone ? `Phone: ${userPhone}` : ""].filter(Boolean),
+    pageWidth / 2 + 6,
+    y + 10,
+    4.8,
+    text
+  )
+
+  y += Math.max(leftBoxH, rightBoxH) + 8
+
+  const metaH = 20
+  drawSectionBox(pdf, margin, y, contentWidth, metaH, "Invoice details")
+  pdf.setTextColor(...text)
   pdf.setFont("Helvetica", "normal")
   pdf.setFontSize(9)
+  pdf.text(`Invoice date: ${format(new Date(invoiceDate), "dd MMM yyyy")}`, margin + 4, y + 11)
+  pdf.text(`Due date: ${format(new Date(dueDate), "dd MMM yyyy")}`, margin + 70, y + 11)
+  pdf.text(`Event date: ${format(new Date(eventDate), "dd MMM yyyy")}`, margin + 126, y + 11)
 
-  // Artist details
-  const artistDetails = [
-    artistName,
-    artistEmail,
-    `Ph: ${artistPhone}`,
-    `GSTIN: ${artistGSTIN || "N/A"}`,
-  ]
+  y += metaH + 8
 
-  let artistY = yPosition
-  artistDetails.forEach((detail) => {
-    pdf.text(detail, margin, artistY)
-    artistY += 5
-  })
-
-  // Customer details
-  const customerDetails = [
-    userName,
-    userEmail,
-    `Ph: ${userPhone}`,
-  ]
-
-  let customerY = yPosition
-  customerDetails.forEach((detail) => {
-    pdf.text(detail, pageWidth / 2, customerY)
-    customerY += 5
-  })
-
-  yPosition = Math.max(artistY, customerY) + 5
-
-  // Divider line
-  pdf.setDrawColor(196, 92, 38)
-  pdf.setLineWidth(0.5)
-  pdf.line(margin, yPosition, pageWidth - margin, yPosition)
-
-  yPosition += 8
-
-  // Item details header
-  pdf.setFillColor(245, 233, 216)
-  pdf.setTextColor(80, 80, 80)
+  pdf.setDrawColor(220, 224, 230)
+  pdf.setFillColor(...navy)
+  pdf.rect(margin, y, contentWidth, 8, "F")
+  pdf.setTextColor(255, 255, 255)
   pdf.setFont("Helvetica", "bold")
   pdf.setFontSize(9)
+  pdf.text("Description", margin + 3, y + 5.5)
+  pdf.text("Date", margin + 103, y + 5.5)
+  pdf.text("Location", margin + 128, y + 5.5)
+  pdf.text("Amount", pageWidth - margin - 18, y + 5.5, { align: "right" })
 
-  const col1 = margin
-  const col2 = margin + 80
-  const col3 = pageWidth - margin - 40
+  y += 12
 
-  pdf.rect(margin - 1, yPosition - 4, contentWidth + 2, 6, "F")
-  pdf.text("Description", col1, yPosition)
-  pdf.text("Date", col2, yPosition)
-  pdf.text("Amount", col3, yPosition)
+  const description = programDescription
+    ? `${programTitle || "Booking service"} - ${programDescription}`
+    : programTitle || "Booking service"
+  const descLines = pdf.splitTextToSize(description, 90)
+  const loc = eventLocation || "N/A"
+  const locLines = pdf.splitTextToSize(loc, 40)
+  const rowHeight = Math.max(descLines.length * 4.5, locLines.length * 4.5, 10)
 
-  yPosition += 8
-
-  // Items
+  pdf.setFillColor(255, 255, 255)
+  pdf.setDrawColor(232, 236, 241)
+  pdf.roundedRect(margin, y - 1, contentWidth, rowHeight + 2, 2, 2, "FD")
+  pdf.setTextColor(...text)
   pdf.setFont("Helvetica", "normal")
-  pdf.setTextColor(0, 0, 0)
   pdf.setFontSize(9)
 
-  // Program details
-  const programText = `${programTitle}${programDescription ? ` - ${programDescription}` : ""}`
-  const maxWidth = 60
-  const lines = pdf.splitTextToSize(programText, maxWidth)
-
-  lines.forEach((line, index) => {
-    if (index === 0) {
-      pdf.text(line, col1, yPosition)
-      pdf.text(formatDate(new Date(eventDate), "dd/MM/yyyy"), col2, yPosition)
-      pdf.text(`₹${amount.toFixed(2)}`, col3, yPosition)
-    } else {
-      pdf.text(line, col1, yPosition)
-    }
-    yPosition += 5
+  let rowY = y + 4
+  descLines.forEach((line, index) => {
+    pdf.text(line, margin + 3, rowY + index * 4.5)
   })
+  pdf.text(format(new Date(eventDate), "dd MMM yyyy"), margin + 103, rowY)
+  locLines.forEach((line, index) => {
+    pdf.text(line, margin + 128, rowY + index * 4.5)
+  })
+  pdf.text(currency(amount), pageWidth - margin - 3, rowY, { align: "right" })
 
-  if (eventLocation) {
-    const locationText = `Location: ${eventLocation}`
-    const locationLines = pdf.splitTextToSize(locationText, maxWidth)
-    yPosition += 2
-    pdf.setFontSize(8)
-    pdf.setTextColor(100, 100, 100)
-    locationLines.forEach((line) => {
-      pdf.text(line, col1, yPosition)
-      yPosition += 4
-    })
-    yPosition += 2
-  }
+  y += rowHeight + 8
 
-  yPosition += 5
-
-  // Divider
-  pdf.setDrawColor(196, 92, 38)
-  pdf.setLineWidth(0.3)
-  pdf.line(margin, yPosition, pageWidth - margin, yPosition)
-
-  yPosition += 8
-
-  // Calculation table
-  pdf.setFont("Helvetica", "normal")
-  pdf.setFontSize(9)
-  pdf.setTextColor(0, 0, 0)
-
-  const subtotal = amount
+  const subtotal = Number(amount || 0)
   const gstAmount = (subtotal * gstRate) / 100
   const total = subtotal + gstAmount
 
-  // Subtotal
-  pdf.text("Subtotal:", col2, yPosition)
-  pdf.text(`₹${subtotal.toFixed(2)}`, col3, yPosition)
+  const summaryX = pageWidth - margin - 72
+  const summaryW = 72
+  drawSectionBox(pdf, summaryX, y, summaryW, 32, "Summary")
 
-  // GST
-  yPosition += 6
-  pdf.text(`GST (${gstRate}%):`, col2, yPosition)
-  pdf.text(`₹${gstAmount.toFixed(2)}`, col3, yPosition)
-
-  // Total (highlighted)
-  yPosition += 8
-  pdf.setFillColor(196, 92, 38)
-  pdf.rect(col2 - 20, yPosition - 5, contentWidth - col2 + 20 + 1, 8, "F")
+  pdf.setTextColor(...text)
+  pdf.setFontSize(9)
+  pdf.setFont("Helvetica", "normal")
+  pdf.text("Subtotal", summaryX + 4, y + 12)
+  pdf.text(currency(subtotal), pageWidth - margin - 4, y + 12, { align: "right" })
+  pdf.text(`GST (${gstRate}%)`, summaryX + 4, y + 18)
+  pdf.text(currency(gstAmount), pageWidth - margin - 4, y + 18, { align: "right" })
   pdf.setFont("Helvetica", "bold")
-  pdf.setTextColor(255, 255, 255)
-  pdf.setFontSize(11)
-  pdf.text("TOTAL:", col2, yPosition + 1)
-  pdf.text(`₹${total.toFixed(2)}`, col3, yPosition + 1)
+  pdf.setFontSize(10)
+  pdf.setTextColor(...navy)
+  pdf.text("Total", summaryX + 4, y + 27)
+  pdf.text(currency(total), pageWidth - margin - 4, y + 27, { align: "right" })
 
-  yPosition += 15
+  y += 40
 
-  // Notes section
+  if (eventLocation) {
+    pdf.setFont("Helvetica", "bold")
+    pdf.setFontSize(9)
+    pdf.setTextColor(...muted)
+    pdf.text("Event location", margin, y)
+    y += 5
+    pdf.setFont("Helvetica", "normal")
+    pdf.setTextColor(...text)
+    y = writeLines(pdf, pdf.splitTextToSize(eventLocation, contentWidth), margin, y, 4.5, text) + 2
+  }
+
   if (notes) {
     pdf.setFont("Helvetica", "bold")
     pdf.setFontSize(9)
-    pdf.setTextColor(80, 80, 80)
-    pdf.text("Notes:", margin, yPosition)
-
-    yPosition += 5
+    pdf.setTextColor(...muted)
+    pdf.text("Notes", margin, y)
+    y += 5
     pdf.setFont("Helvetica", "normal")
-    pdf.setFontSize(8)
-    pdf.setTextColor(100, 100, 100)
-
-    const notesLines = pdf.splitTextToSize(notes, contentWidth)
-    notesLines.forEach((line) => {
-      pdf.text(line, margin, yPosition)
-      yPosition += 4
-    })
+    pdf.setTextColor(...text)
+    y = writeLines(pdf, pdf.splitTextToSize(notes, contentWidth), margin, y, 4.5, text) + 2
   }
 
-  // Footer
-  const footerY = pageHeight - 15
-  pdf.setDrawColor(196, 92, 38)
-  pdf.setLineWidth(0.3)
+  const footerY = pageHeight - 16
+  pdf.setDrawColor(220, 224, 230)
   pdf.line(margin, footerY, pageWidth - margin, footerY)
-
   pdf.setFontSize(8)
-  pdf.setTextColor(150, 150, 150)
-  pdf.setFont("Helvetica", "normal")
+  pdf.setTextColor(120, 120, 120)
   pdf.text(
-    "Thank you for your business! Payment terms: 50% upfront, 50% on event day",
+    "Thank you for your business. Payment terms: 50% upfront, 50% on event day.",
     pageWidth / 2,
     footerY + 5,
     { align: "center" }
   )
   pdf.text(
-    `Generated on ${formatDate(new Date(), "dd/MM/yyyy HH:mm")} | Dhwani Event Management`,
+    `Generated on ${format(new Date(), "dd MMM yyyy HH:mm")}`,
     pageWidth / 2,
-    pageHeight - 5,
+    footerY + 9,
     { align: "center" }
   )
 

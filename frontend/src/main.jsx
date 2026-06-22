@@ -22,9 +22,9 @@ import UserLayout from "./UserLayout.jsx";
 import BrowseArtists from "./pages/BrowseArtists.jsx";
 import ArtistPublicPage from "./pages/ArtistPublicPage.jsx";
 import UserBookings from "./pages/UserBookings.jsx";
-import ArtistPrograms from "./pages/ArtistPrograms.jsx";
-import ArtistCalendar from "./pages/ArtistCalendar.jsx";
-import ArtistBookings from "./pages/ArtistBookings.jsx";
+import ArtistPrograms from "./pages/ArtistProgramsImproved.jsx";
+import ArtistCalendar from "./pages/ArtistCalendarImproved.jsx";
+import ArtistBookings from "./pages/ArtistBookingsImproved.jsx";
 import { LegacyLoginRedirect, LegacyRegisterRedirect } from "./LegacyAuthRedirect.jsx";
 
 createRoot(document.getElementById("root")).render(
