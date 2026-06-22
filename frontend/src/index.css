@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-[#fbfaf7] text-[#1c1b1a] antialiased;
+  }
+
+  a {
+    @apply text-inherit;
+  }
+
+  ::selection {
+    background: rgba(196, 92, 38, 0.25);
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply w-full max-w-6xl mx-auto px-4 sm:px-6;
+  }
+
+  .surface {
+    @apply rounded-3xl border border-black/5 bg-white shadow-sm;
+  }
+
+  .card {
+    @apply rounded-2xl border border-black/5 bg-white shadow-sm;
+  }
+
+  .card-hover {
+    @apply transition hover:-translate-y-0.5 hover:shadow-md hover:border-black/10;
+  }
+
+  .title-hero {
+    @apply text-3xl sm:text-4xl font-semibold tracking-tight text-[#1e2a5e];
+  }
+
+  .title-section {
+    @apply text-xl sm:text-2xl font-semibold tracking-tight text-[#1e2a5e];
+  }
+
+  .muted {
+    @apply text-sm text-[#5c4f3d];
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none;
+    @apply focus:ring-2 focus:ring-[#1e2a5e]/25 focus:border-[#1e2a5e]/25;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium;
+    @apply transition focus:outline-none focus:ring-2 focus:ring-[#1e2a5e]/25;
+  }
+
+  .btn-primary {
+    @apply bg-[#1e2a5e] text-white hover:bg-[#15204a];
+  }
+
+  .btn-accent {
+    @apply bg-[#c45c26] text-white hover:bg-[#a34c1f];
+  }
+
+  .btn-ghost {
+    @apply border border-black/10 bg-white hover:bg-black/[0.03];
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply border-emerald-600/20 bg-emerald-50 text-emerald-800;
+  }
+
+  .badge-warning {
+    @apply border-amber-600/20 bg-amber-50 text-amber-900;
+  }
+
+  .badge-danger {
+    @apply border-red-600/20 bg-red-50 text-red-800;
+  }
+
+  .badge-neutral {
+    @apply border-black/10 bg-black/[0.03] text-black/70;
+  }
+}
+
+@layer components {
+
+  .input-field {
+    @apply w-full px-4 py-2 rounded-lg bg-white/70 backdrop-blur-md 
+    border border-gray-300 focus:outline-none focus:ring-2 
+    focus:ring-purple-500 transition duration-300;
+  }
+
+  .btn-main {
+    @apply w-full py-2 mt-2 rounded-lg bg-purple-700 text-white 
+    font-semibold hover:bg-purple-800 hover:scale-105 
+    transition duration-300 shadow-lg;
+  }
+
+}
